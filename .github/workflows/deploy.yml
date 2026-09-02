@@ -1,12 +1,19 @@
-name: Deploy SRE
+name: DevSecOps
 
 on:
   push:
     branches:
       - main
+      - feature/bad-security
+
+  pull_request:
+    branches:
+      - main
 
 jobs:
+
   test:
+    name: Pytest
     runs-on: ubuntu-latest
 
     steps:
@@ -24,8 +31,57 @@ jobs:
       - name: Ejecutar Pytest
         run: pytest -v
 
+
+  bandit:
+    name: Bandit SAST
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Bandit
+        run: pip install bandit
+
+      - name: Ejecutar Bandit
+        run: bandit -r . -ll
+
+
+  trivy:
+    name: Trivy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Construir imagen
+        run: docker build -t sre-api:${{ github.sha }} .
+
+      - name: Escanear imagen con Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: sre-api:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          ignore-unfixed: false
+          severity: 'CRITICAL,HIGH'
+
+
   deploy:
-    needs: test
+    name: Deploy
+    needs:
+      - test
+      - bandit
+      - trivy
+
+    if: github.ref == 'refs/heads/main'
+
     runs-on: ubuntu-latest
 
     steps:
