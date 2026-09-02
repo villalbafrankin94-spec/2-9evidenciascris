@@ -9,7 +9,7 @@ def get_connection():
     return pymysql.connect(
         host=os.getenv("DB_HOST", "servidor-bd"),
         user=os.getenv("DB_USER", "root"),
-        password="rootpassword",
+        password=os.getenv("DB_PASSWORD"),
         database=os.getenv("DB_NAME", "sre_db"),
         port=3306
     )
