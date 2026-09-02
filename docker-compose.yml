@@ -1,0 +1,35 @@
+services:
+
+  api:
+    build: .
+    container_name: mi-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: servidor-bd
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: sre_db
+    depends_on:
+      - servidor-bd
+    networks:
+      - red-app
+
+  servidor-bd:
+    image: mysql:8.0
+    container_name: servidor-bd
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sre_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - red-app
+
+networks:
+  red-app:
+
+volumes:
+  mysql_data:
