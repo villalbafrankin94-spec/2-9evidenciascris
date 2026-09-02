@@ -64,7 +64,7 @@ jobs:
         run: docker build -t sre-api:${{ github.sha }} .
 
       - name: Escanear imagen con Trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: sre-api:${{ github.sha }}
           format: table
